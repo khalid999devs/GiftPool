@@ -1,0 +1,201 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function poolDoc(poolId) {
+      return /databases/$(database)/documents/pools/$(poolId);
+    }
+
+    function memberDoc(poolId, userId) {
+      return /databases/$(database)/documents/pools/$(poolId)/members/$(userId);
+    }
+
+    function isMember(poolId) {
+      return signedIn() && exists(memberDoc(poolId, uid()));
+    }
+
+    function isOwner(poolId) {
+      return signedIn() && get(poolDoc(poolId)).data.ownerUid == uid();
+    }
+
+    function isOpen(poolId) {
+      let pool = get(poolDoc(poolId)).data;
+      return pool.status in ['planning', 'purchased'] && pool.isDeleted == false;
+    }
+
+    function onlyChanges(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    match /users/{userId} {
+      allow read, create: if signedIn() && uid() == userId;
+      allow update: if signedIn() && uid() == userId && onlyChanges(['displayName', 'avatarId']);
+
+      match /devices/{token} {
+        allow read, write: if signedIn() && uid() == userId;
+      }
+
+      match /poolRefs/{poolId} {
+        allow read: if signedIn() && uid() == userId;
+        allow create: if signedIn() && uid() == userId && existsAfter(memberDoc(poolId, userId));
+      }
+    }
+
+    match /invites/{token} {
+      allow get: if signedIn();
+      allow create: if signedIn()
+        && getAfter(poolDoc(request.resource.data.poolId)).data.ownerUid == uid();
+      allow update: if signedIn()
+        && resource.data.createdBy == uid()
+        && onlyChanges(['isActive']);
+    }
+
+    match /pools/{poolId} {
+      allow read: if isMember(poolId);
+
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == uid()
+        && request.resource.data.status == 'planning'
+        && request.resource.data.budgetMinor > 0;
+
+      allow update: if signedIn()
+        && resource.data.ownerUid == uid()
+        && request.resource.data.ownerUid == uid()
+        && request.resource.data.budgetMinor > 0;
+
+      match /members/{memberUid} {
+        function validInvite(token) {
+          let invite = get(/databases/$(database)/documents/invites/$(token)).data;
+          return invite.poolId == poolId
+            && invite.isActive == true
+            && invite.expiresAt > request.time
+            && isOpen(poolId);
+        }
+
+        function pingAllowed() {
+          let before = resource.data;
+          let after = request.resource.data;
+          return after.get('lastPingAt', null) == before.get('lastPingAt', null)
+            || (before.assignedMinor > before.collectedMinor
+                && before.get('reportedGivenAt', null) == null
+                && (before.get('lastPingAt', null) == null
+                    || before.lastPingAt < request.time - duration.value(24, 'h')));
+        }
+
+        allow read: if isMember(poolId);
+
+        // The owner joins while creating the pool. Everyone else needs a valid invite.
+        allow create: if signedIn()
+          && memberUid == uid()
+          && request.resource.data.assignedMinor == 0
+          && request.resource.data.collectedMinor == 0
+          && ((request.resource.data.role == 'owner' && getAfter(poolDoc(poolId)).data.ownerUid == uid())
+              || (request.resource.data.role == 'member' && validInvite(request.resource.data.inviteToken)));
+
+        allow update: if signedIn() && (
+          (isOwner(poolId)
+            && isOpen(poolId)
+            && onlyChanges(['assignedMinor', 'collectedMinor', 'reportedGivenAt', 'lastPingAt', 'pingCount', 'settledAt'])
+            && request.resource.data.collectedMinor >= 0
+            && request.resource.data.collectedMinor <= request.resource.data.assignedMinor
+            && pingAllowed())
+          || (memberUid == uid() && isOpen(poolId) && onlyChanges(['reportedGivenAt']))
+          || (memberUid == uid() && onlyChanges(['displayName', 'avatarId']))
+        );
+      }
+
+      match /ideas/{ideaId} {
+        allow read: if isMember(poolId);
+        allow create: if isMember(poolId) && isOpen(poolId)
+          && request.resource.data.createdBy == uid();
+        allow update: if isMember(poolId) && isOpen(poolId)
+          && resource.data.createdBy == uid()
+          && request.resource.data.createdBy == uid();
+        // A selected idea can only go once the selection is cleared in the same write.
+        allow delete: if isOpen(poolId)
+          && (isOwner(poolId) || resource.data.createdBy == uid())
+          && getAfter(poolDoc(poolId)).data.get('selectedIdeaId', null) != ideaId;
+      }
+
+      match /ideaPhotos/{ideaId} {
+        function idea() {
+          return /databases/$(database)/documents/pools/$(poolId)/ideas/$(ideaId);
+        }
+
+        allow read: if isMember(poolId);
+        // Only whoever suggested the idea sets its photo, and photos stay small.
+        allow create, update: if isMember(poolId) && isOpen(poolId)
+          && getAfter(idea()).data.createdBy == uid()
+          && request.resource.data.jpeg.size() < 300000;
+        // A photo goes when its idea is deleted, or when its author removes it.
+        allow delete: if isMember(poolId)
+          && (!existsAfter(idea()) || getAfter(idea()).data.createdBy == uid());
+      }
+
+      match /votes/{voterUid} {
+        allow read: if isMember(poolId);
+        allow write: if isMember(poolId) && isOpen(poolId) && voterUid == uid();
+        // Votes for an idea being deleted are removed in the same batch.
+        allow delete: if isMember(poolId)
+          && (voterUid == uid()
+              || !existsAfter(/databases/$(database)/documents/pools/$(poolId)/ideas/$(resource.data.ideaId)));
+      }
+
+      match /tasks/{taskId} {
+        allow read: if isMember(poolId);
+        // getAfter lets the starter checklist be written together with a new pool.
+        allow create: if signedIn() && getAfter(poolDoc(poolId)).data.ownerUid == uid();
+        allow update: if isOpen(poolId) && (
+          isOwner(poolId)
+          || (resource.data.get('assignedToUid', null) == uid() && onlyChanges(['isDone', 'completedAt']))
+        );
+        allow delete: if isOwner(poolId) && isOpen(poolId);
+      }
+
+      match /messages/{messageId} {
+        allow read: if isMember(poolId);
+        allow create: if isMember(poolId) && isOpen(poolId)
+          && request.resource.data.senderUid == uid()
+          && request.resource.data.body.size() > 0
+          && request.resource.data.body.size() <= 500;
+        // Only the sender: edit within 15 minutes, or unsend (the text is cleared).
+        allow update: if isMember(poolId) && isOpen(poolId)
+          && resource.data.senderUid == uid()
+          && !('unsentAt' in resource.data)
+          && ((onlyChanges(['body', 'unsentAt'])
+                && request.resource.data.body == ''
+                && request.resource.data.unsentAt == request.time)
+            || (onlyChanges(['body', 'editedAt'])
+                && request.resource.data.body.size() > 0
+                && request.resource.data.body.size() <= 500
+                && request.resource.data.editedAt == request.time
+                && request.time < resource.data.createdAt + duration.value(15, 'm')));
+      }
+
+      match /pings/{pingId} {
+        allow read: if signedIn()
+          && (resource.data.recipientUid == uid() || isOwner(poolId));
+
+        // The member's lastPingAt must be stamped in the same batch, which is where the
+        // outstanding-balance and 24-hour checks above run.
+        allow create: if isOwner(poolId) && isOpen(poolId)
+          && request.resource.data.senderUid == uid()
+          && request.resource.data.recipientUid != uid()
+          && getAfter(memberDoc(poolId, request.resource.data.recipientUid)).data.lastPingAt == request.time;
+
+        allow update: if signedIn()
+          && resource.data.recipientUid == uid()
+          && onlyChanges(['readAt']);
+      }
+    }
+  }
+}
