@@ -1,0 +1,26 @@
+{
+  "occasions": [
+    { "id": "birthday", "title": "Birthday", "symbol": "birthday.cake.fill", "tint": "coral", "checklistTemplateId": "classic" },
+    { "id": "farewell", "title": "Farewell", "symbol": "airplane.departure", "tint": "sky", "checklistTemplateId": "farewell" },
+    { "id": "graduation", "title": "Graduation", "symbol": "graduationcap.fill", "tint": "plum", "checklistTemplateId": "classic" },
+    { "id": "wedding", "title": "Wedding", "symbol": "heart.fill", "tint": "rose", "checklistTemplateId": "celebration" },
+    { "id": "new_baby", "title": "New Baby", "symbol": "figure.and.child.holdinghands", "tint": "mint", "checklistTemplateId": "classic" },
+    { "id": "appreciation", "title": "Appreciation", "symbol": "hands.clap.fill", "tint": "sun", "checklistTemplateId": "farewell" },
+    { "id": "other", "title": "Something Else", "symbol": "gift.fill", "tint": "coral", "checklistTemplateId": "classic" }
+  ],
+  "giftCategories": [
+    { "id": "experience", "title": "Experience", "symbol": "ticket.fill" },
+    { "id": "gadget", "title": "Gadget", "symbol": "headphones" },
+    { "id": "books", "title": "Books", "symbol": "book.fill" },
+    { "id": "fashion", "title": "Fashion", "symbol": "tshirt.fill" },
+    { "id": "home", "title": "Home", "symbol": "house.fill" },
+    { "id": "food", "title": "Food & Treats", "symbol": "fork.knife" },
+    { "id": "handmade", "title": "Handmade", "symbol": "paintbrush.pointed.fill" },
+    { "id": "other", "title": "Other", "symbol": "sparkles" }
+  ],
+  "checklistTemplates": [
+    { "id": "classic", "title": "Classic gift", "taskTitles": ["Buy gift", "Wrap gift", "Write a card", "Deliver gift"] },
+    { "id": "farewell", "title": "Farewell gift", "taskTitles": ["Buy gift", "Collect signatures on a card", "Wrap gift", "Present gift"] },
+    { "id": "celebration", "title": "Celebration gift", "taskTitles": ["Buy gift", "Wrap gift", "Arrange delivery", "Deliver gift"] }
+  ]
+}
