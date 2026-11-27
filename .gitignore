@@ -1,0 +1,19 @@
+.DS_Store
+xcuserdata/
+build/
+DerivedData/
+*.xcresult
+
+# Firebase config for a real project. Each developer downloads their own from the Firebase console.
+GiftPool/GoogleService-Info.plist
+
+# Firebase emulator logs
+firestore-debug.log
+firebase-debug.log
+ui-debug.log
+
+# Push sender (a JavaScript Cloud Function), kept local until the project is on the Blaze plan
+functions/
+
+# Local helper scripts (demo data, rules check), not part of the app
+tools/
