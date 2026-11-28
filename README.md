@@ -8,8 +8,12 @@
   split the cost, see who has given, and tick off the checklist until the gift is delivered.
 </p>
 <p align="center">
-  SwiftUI · Firebase Auth · Cloud Firestore · iOS 26 &nbsp;·&nbsp; CSE 3218 mobile app lab project
+  <img src="https://img.shields.io/badge/SwiftUI-iOS%2026-F05138?logo=swift&logoColor=white" alt="SwiftUI, iOS 26">
+  <img src="https://img.shields.io/badge/Firebase-Auth%20%C2%B7%20Firestore-FFCA28?logo=firebase&logoColor=black" alt="Firebase Auth and Firestore">
+  <img src="https://img.shields.io/badge/Architecture-MVVM-6E56CF" alt="MVVM">
+  <img src="https://img.shields.io/badge/License-PolyForm%20Strict-lightgrey" alt="License: PolyForm Strict">
 </p>
+<p align="center"><sub>CSE 3218 mobile app lab project</sub></p>
 
 <p align="center">
   <img src="docs/images/banner-welcome-back.webp" width="19%" alt="Welcome back: the gift gently opens while plan cards float around it">
