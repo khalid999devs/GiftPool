@@ -13,7 +13,6 @@
   <img src="https://img.shields.io/badge/Architecture-MVVM-6E56CF" alt="MVVM">
   <img src="https://img.shields.io/badge/License-PolyForm%20Strict-lightgrey" alt="License: PolyForm Strict">
 </p>
-<p align="center"><sub>CSE 3218 mobile app lab project</sub></p>
 
 <p align="center">
   <img src="docs/images/banner-welcome-back.webp" width="19%" alt="Welcome back: the gift gently opens while plan cards float around it">
@@ -25,7 +24,7 @@
 
 ## Status
 
-All twelve features from the blueprint (F01–F12) work end to end against a live Firebase project. They're checked three ways:
+All twelve features work end to end against a live Firebase project. They're checked three ways:
 
 - **44 unit tests** cover the money maths, reminder rules, validation, JSON templates and invite codes.
 - **An end-to-end UI test** drives the real app against the Firebase emulator with two fresh accounts: create a plan, ideas and voting, checklist, chat (including editing and unsending a message), invite and join, shares, a reminder, "I have given", confirming, delivery and settings. The screenshots below come from a second UI test.
@@ -35,7 +34,7 @@ GiftPool never moves money. Friends hand their share to the organizer in person,
 
 The organizer does the most work, so the plan page always shows their **next step** with a one-tap button. When the instant camera pulls ahead in the vote, Khalid picks it right there. When Nadia joins late, **Split Equally** gives everyone a fresh share. In the wedding plan, **Remind 5 People** nudges everyone who still owes and wasn't reminded today, in one go. Then **Mark as Purchased** and **Mark as Delivered** finish the plan.
 
-Lock-screen push for reminders is written but not switched on yet; see [Push notifications](#push-notifications). The required in-app reminders work fully: the bell on Home, an unread badge, and mark as read.
+Lock-screen push for reminders is written but not switched on yet; see [Push notifications](#push-notifications). The in-app reminders work fully: the bell on Home, an unread badge, and mark as read.
 
 ## See it in action
 
@@ -55,20 +54,20 @@ The screenshots use the demo data. **Khalid** is organizing **Rafi's birthday gi
 
 ## Features
 
-| | Feature | What it does |
-|---|---|---|
-| F01 | Accounts | Sign up, sign in, sign out; the session is restored on launch. Pick an avatar from 32 cute, cool, chill and funny faces |
-| F02 | Gift plans | Create a plan for a person and occasion with a budget, edit it, delete it |
-| F03 | Invitations | A private 16-character code to share; regenerate it or turn it off |
-| F04 | Ideas | Members suggest gifts with a price, a photo, a product link, a category and a note |
-| F05 | Voting | One vote each, changeable at any time; the organizer picks the winner |
-| F06 | Contributions | Split the budget equally in one tap or set shares by hand, then record money as it arrives |
-| F07 | "I have given" | A member reports giving; it counts only once the organizer confirms |
-| F08 | Private reminders | The organizer nudges one member, or everyone who owes with Remind All; each person at most once every 24 hours |
-| F09 | Checklist | Starter tasks from JSON; assign, set due dates, reorder, tick off |
-| F10 | Group chat | A live chat per plan, hidden from the gift's recipient, with older messages loaded in pages. Long-press your own message to edit it (for 15 minutes) or unsend it, like Messenger |
-| F11 | Status and history | Planning → Purchased → Delivered (or Cancelled); finished plans move to History, read-only |
-| F12 | Reminder closure | A reminder shows as resolved once the share is collected, and no new ones can be sent |
+| Feature | What it does |
+|---|---|
+| Accounts | Sign up, sign in, sign out; the session is restored on launch. Pick an avatar from 32 cute, cool, chill and funny faces |
+| Gift plans | Create a plan for a person and occasion with a budget, edit it, delete it |
+| Invitations | A private 16-character code to share; regenerate it or turn it off |
+| Ideas | Members suggest gifts with a price, a photo, a product link, a category and a note |
+| Voting | One vote each, changeable at any time; the organizer picks the winner |
+| Contributions | Split the budget equally in one tap or set shares by hand, then record money as it arrives |
+| "I have given" | A member reports giving; it counts only once the organizer confirms |
+| Private reminders | The organizer nudges one member, or everyone who owes with Remind All; each person at most once every 24 hours |
+| Checklist | Starter tasks from JSON; assign, set due dates, reorder, tick off |
+| Group chat | A live chat per plan, hidden from the gift's recipient, with older messages loaded in pages. Long-press your own message to edit it (for 15 minutes) or unsend it, like Messenger |
+| Status and history | Planning → Purchased → Delivered (or Cancelled); finished plans move to History, read-only |
+| Reminder closure | A reminder shows as resolved once the share is collected, and no new ones can be sent |
 
 ## How it fits together
 
@@ -182,18 +181,6 @@ GiftPool/
 | A colour, spacing or button | `DesignSystem/` | Use `Theme` values; text colours must pass 4.5:1 contrast |
 | An occasion, category or starter task | `Resources/starter_templates.json` | Decoded with `Codable`; no code change needed |
 
-## What the labs taught, and where it's used
-
-| Lab | Topic | Where to look |
-|---|---|---|
-| Lab 1 | Swift basics: optionals, structs, enums, closures | `Models/`, `Helpers/MoneyCalculator.swift`, `Helpers/Validators.swift` |
-| Lab 2 | SwiftUI elements: stacks, `Text`, `Image`, `Button`, `List`, `Form` | every view, e.g. `Features/Home/PoolCardView.swift`, `Features/Pool/PoolEditorView.swift` |
-| Lab 3 | `@State`, `@Binding`, `NavigationStack` | `Features/Checklist/TaskRow.swift` (binding), `App/RootView.swift` and `Features/Home/HomeView.swift` (navigation) |
-| Lab 4 | Firebase Auth and Firestore, `FirebaseApp.configure()` in `init()`, snapshot listeners, MVVM | `App/GiftPoolApp.swift`, `Services/AuthService.swift`, `Data/FirestoreGiftPoolRepository.swift` |
-| Lab 5 | `@StateObject` vs `@ObservedObject` vs `@EnvironmentObject`, JSON parsing with `Codable` | `App/AppSession.swift` (environment), `Features/Pool/PoolDetailView.swift` (state object passed down), `Services/TemplateLoader.swift` |
-
-Beyond the labs: `PhotosPicker` with on-device photo compression, batched writes, server timestamps, Firestore security rules, paging the chat with a cursor, and XCTest with XCUITest.
-
 ## Who can do what (`firestore.rules`)
 
 | | Anyone signed in | Member | Organizer |
@@ -249,7 +236,7 @@ To try it by hand, use two accounts, say Khalid and Sara:
 
 ## Push notifications
 
-The blueprint makes lock-screen push optional, and says it must come from a trusted server, never from a fake local alert. GiftPool has every piece of that in place:
+Lock-screen push is an optional extra, and it has to come from a trusted server, never from a fake local alert. GiftPool has every piece of that in place:
 
 | Piece | Where | State |
 |---|---|---|
@@ -264,30 +251,23 @@ It isn't switched on because two accounts need an upgrade:
 1. **A paid Apple Developer Program membership.** Free personal teams can't create the APNs key or sign the Push Notifications capability. Once you have one:
    - make an APNs key (Certificates, IDs & Profiles → Keys) and upload it in Firebase console → Project settings → Cloud Messaging;
    - add the **Push Notifications** capability in Xcode. For now the entitlement is applied to simulator builds only, so device builds keep working on a free team.
-2. **The Firebase Blaze plan**, which Cloud Functions require. The free monthly allowance covers a class project. Then add the sender back under `functions/` and run `npx firebase-tools deploy --only functions`.
+2. **The Firebase Blaze plan**, which Cloud Functions require. The free monthly allowance covers a small group of users. Then add the sender back under `functions/` and run `npx firebase-tools deploy --only functions`.
 
 Why a server at all: a push to someone else's phone must be signed with the project's admin credentials, and those can never ship inside the app. Cloud Functions run Node.js or Python, not Swift, so the sender is the one piece of JavaScript, which is why it stays out of this Swift repo until it's deployed.
 
 Chat and in-app reminders don't depend on any of this.
 
-## References
+## References and credits
 
-From the lab handouts:
+Apple documentation:
 
-- [Firebase iOS SDK](https://github.com/firebase/firebase-ios-sdk)
-- [Getting started with SwiftUI and Firebase](https://medium.com/@authfy/getting-started-with-swiftui-and-firebase-a-complete-guide-e7c25b7cd9c4)
-- [@State vs @Binding](https://blog.devgenius.io/swiftui-state-vs-binding-727262600884)
-- [NavigationStack, the modern approach](https://medium.com/@viralswift/mastering-swiftui-navigationstack-the-modernapproach-to-navigation-d0e665f694c5)
-- [@ObservedObject, @State and @EnvironmentObject](https://www.hackingwithswift.com/quick-start/swiftui/whats-the-difference-between-observedobject-state-and-environmentobject)
-- [@StateObject vs @ObservedObject](https://pedroalvarez-29395.medium.com/swiftui-stateobject-x-observedobject-when-to-use-each-one-f738eb57ba6e)
-- [Observable objects and environment objects](https://dev.to/cl0udleadanis/tutorial-13-observable-objects-and-environment-objects-in-swiftui-9o2)
-- [Parsing JSON in Swift](https://matteomanferdini.com/swift-parse-json/)
-- [Swift: the basics](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/thebasics) and [closures](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/closures/)
-
-Avatar illustrations come from [DiceBear](https://www.dicebear.com) and are used under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (Big Smile by Ashley Seo, Adventurer by Lisa Wischofsky, Fun Emoji by Davis Uche) and the artist's own free-for-commercial-use terms (Avataaars by Pablo Stanley).
+- [The Swift Programming Language](https://docs.swift.org/swift-book/)
+- [SwiftUI](https://developer.apple.com/documentation/swiftui)
 
 Firebase documentation:
 
+- [Firebase iOS SDK](https://github.com/firebase/firebase-ios-sdk)
+- [Authentication on Apple platforms](https://firebase.google.com/docs/auth/ios/start)
 - [Cloud Firestore security rules](https://firebase.google.com/docs/firestore/security/get-started)
 - [Listen to realtime updates](https://firebase.google.com/docs/firestore/query-data/listen)
 - [Batched writes](https://firebase.google.com/docs/firestore/manage-data/transactions)
@@ -295,6 +275,8 @@ Firebase documentation:
 - [A trusted environment for sending messages](https://firebase.google.com/docs/cloud-messaging/server-environment)
 - [Local Emulator Suite](https://firebase.google.com/docs/emulator-suite)
 
+Avatar illustrations come from [DiceBear](https://www.dicebear.com) and are used under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (Big Smile by Ashley Seo, Adventurer by Lisa Wischofsky, Fun Emoji by Davis Uche) and the artist's own free-for-commercial-use terms (Avataaars by Pablo Stanley).
+
 ## License
 
-Source-available under the [PolyForm Strict License 1.0.0](https://polyformproject.org/licenses/strict/1.0.0). You may read, build and run GiftPool for personal, noncommercial use, such as studying or grading it. You may not copy it into other projects, publish modified versions or apps, or use it commercially without written permission. See [LICENSE.md](LICENSE.md).
+Source-available under the [PolyForm Strict License 1.0.0](https://polyformproject.org/licenses/strict/1.0.0). You may read, build and run GiftPool for personal, noncommercial use, such as evaluating or studying it. You may not copy it into other projects, publish modified versions or apps, or use it commercially without written permission. See [LICENSE.md](LICENSE.md).
